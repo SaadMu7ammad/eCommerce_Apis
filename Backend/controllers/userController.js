@@ -55,17 +55,39 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 //@route GET /api/users/profile
 //@access private
 const getUserProfile = asyncHandler(async (req, res, next) => {
-  //   const user = await userModel.find({});
-  res.send('profileUser ');
-  //   res.status(200).json(user);
+  try {
+    const user = await userModel.findById(req.user._id);
+    // if (!user) throw new Error('not found such a user')//will be catched in catch block
+    const userRes = { ...user._doc }
+    delete userRes.password
+    res.status(200).json(userRes);
+  }
+  catch (err) {
+    res.status(404)
+    throw new Error('not found such a user')
+  }
 });
 //@desc fetch profile User page
 //@route PUT /api/users/profile
 //@access private
 const updateUserProfile = asyncHandler(async (req, res, next) => {
-  //   const user = await userModel.find({});
-  res.send('updateUserProfile ');
-  //   res.status(200).json(user);
+  try {
+    const user = await userModel.findById(req.user._id);
+    const { email, name, password } = req.body
+    if(email)user.email=email
+    if(name)user.name=name
+    if (password) user.password = password
+    let userRes=await user.save()
+    if (!user) throw new Error('not found such a user')//will be catched in catch block
+     userRes = { ...userRes._doc }
+    delete userRes.password
+    res.status(200).json(userRes);
+  }
+  catch (err) {
+    res.status(404)
+    // console.log(err.message);
+    throw new Error('error happened email/user issues')
+  }
 });
 //@desc get user by id
 //@route GET /api/users/:id
