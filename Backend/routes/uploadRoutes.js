@@ -15,27 +15,34 @@ const storage = multer.diskStorage({
     ); //name of the imgs
   },
 });
-function checkFileType(file, cb) {
-  const filetypes = /jpg|jpeg|png/;
+function fileFilter(req, file, cb) {
+  const filetypes = /jpe?g|png|webp/;
+  const mimetypes = /image\/jpe?g|image\/png|image\/webp/;
+
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
+  const mimetype = mimetypes.test(file.mimetype);
+
   if (extname && mimetype) {
-    return cb(null, true);
+    cb(null, true);
   } else {
-    cb('images only');
+    cb(new Error('Images only!'), false);
   }
 }
 
-const upload = multer({
-  storage,
-});
-router.post(
-  '/',
-  upload.single('eCommerceImg', (req, res) => {
-    res.send({
-      message: 'image uploaded',
+const upload = multer({ storage, fileFilter });
+const uploadSingleImage = upload.single('eCommerceImg'); 
+
+router.post('/', (req, res) => {
+  uploadSingleImage(req, res, function (err) {
+    if (err) {
+      res.status(400).send({ message: err.message });
+    }
+
+    res.status(200).send({
+      message: 'Image uploaded successfully',
       image: `/${req.file.path}`,
     });
-  })
-);
+  });
+});
+
 export default router;

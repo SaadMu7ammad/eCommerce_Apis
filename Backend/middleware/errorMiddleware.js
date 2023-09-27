@@ -7,10 +7,10 @@ const errorHandler = (err, req, res, next) => {
   let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   let message = err.message;
 
-  if (err.name === 'CastError' && err.kind === 'ObjectId') {
-    statusCode = 404;
-    message = 'not a valid id';
-  }
+  // if (err.name === 'CastError' && err.kind === 'ObjectId') {
+  //   statusCode = 404;
+  //   message = 'not a valid id';
+  // }
 
   res.status(statusCode).json({
     message: message,

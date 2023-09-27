@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node Backend/app.js",
-    "app": "nodemon Backend/app.js"
+    "app": "nodemon Backend/app.js",
+    "build":"npm install"
   },
   "repository": {
     "type": "git",
