@@ -79,7 +79,7 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
     if (password) user.password = password
     let userRes=await user.save()
     if (!user) throw new Error('not found such a user')//will be catched in catch block
-     userRes = { ...userRes._doc }
+    userRes = { ...userRes._doc }
     delete userRes.password
     res.status(200).json(userRes);
   }
@@ -93,35 +93,55 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
 //@route GET /api/users/:id
 //@access private/admin
 const getUserById = asyncHandler(async (req, res, next) => {
-  const user = await userModel.find({});
-  res.send(' user by id');
-  //   res.status(200).json(user);
+  const user = await userModel.findById(req.params.id).select('-password');
+  if (!user) {
+    res.status(404);
+    throw new Error('user not found');
+  }
+  res.status(200).json(user); 
 });
 
 //@desc fetch all users
 //@route GET /api/users/
 //@access private/admin
 const getUsers = asyncHandler(async (req, res, next) => {
-  const user = await userModel.find({});
-  res.send('all users');
-  //   res.status(200).json(user);
+  const users = await userModel.find({});
+  res.status(200).json(users);
 });
 
 //@desc update user
 //@route PUT /api/users/:id
 //@access private/admin
 const updateUser = asyncHandler(async (req, res, next) => {
-  const user = await userModel.find({});
-  res.send('update User by id');
-  //   res.status(200).json(user);
+  const { name, email, isAdmin } = req.body
+  const user = await userModel.findById(req.params.id)
+  if (!user) {
+    res.status(404);
+    throw new Error('user not found');
+  }
+  if(name)user.name=name
+  if(email)user.email=email
+  if (isAdmin) user.isAdmin =isAdmin==='true'?true:false
+  const updatedUser = await user.save()
+  const resUser = { ...updatedUser._doc }
+  delete resUser.password
+  res.status(200).json(resUser); 
 });
 //@desc delete user
 //@route DELETE /api/users/:id
 //@access private/admin
 const deleteUser = asyncHandler(async (req, res, next) => {
-  const user = await userModel.find({});
-  res.send('delete user by id');
-  //   res.status(200).json(user);
+  const user = await userModel.findById(req.params.id).select('-password');
+  if (!user) {
+    res.status(404);
+    throw new Error('user not found');
+  }
+  if (user.isAdmin) {
+    res.status(404);
+    throw new Error('cant delete admin user');
+  }
+  await userModel.deleteOne({ _id: user._id })
+  res.status(200).json({message:'user deleted successfully'})
 });
 export {
   authUser,
